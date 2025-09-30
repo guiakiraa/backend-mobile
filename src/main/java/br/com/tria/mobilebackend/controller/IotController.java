@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/iots")
+@CrossOrigin(origins = "*")
 public class IotController {
 
     private final IotRepository iotRepository;

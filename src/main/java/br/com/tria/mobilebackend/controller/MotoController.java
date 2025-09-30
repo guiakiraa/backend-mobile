@@ -1,9 +1,7 @@
 package br.com.tria.mobilebackend.controller;
 
 import br.com.tria.mobilebackend.model.Moto;
-import br.com.tria.mobilebackend.model.Setor;
 import br.com.tria.mobilebackend.repository.MotoRepository;
-import br.com.tria.mobilebackend.repository.SetorRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,14 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/motos")
+@CrossOrigin(origins = "*")
 public class MotoController {
 
     private final MotoRepository motoRepository;
-    private final SetorRepository setorRepository;
 
-    public MotoController(MotoRepository motoRepository, SetorRepository setorRepository) {
+    public MotoController(MotoRepository motoRepository) {
         this.motoRepository = motoRepository;
-        this.setorRepository = setorRepository;
     }
 
     @GetMapping
@@ -36,10 +33,6 @@ public class MotoController {
 
     @PostMapping
     public ResponseEntity<Moto> criar(@RequestBody Moto moto) {
-        if (moto.getSetor() != null && moto.getSetor().getId() != 0) {
-            Setor setor = setorRepository.findById(moto.getSetor().getId()).orElse(null);
-            moto.setSetor(setor);
-        }
         Moto salvo = motoRepository.save(moto);
         return ResponseEntity.created(URI.create("/motos/" + salvo.getId())).body(salvo);
     }
@@ -51,16 +44,13 @@ public class MotoController {
                     existente.setModelo(moto.getModelo());
                     existente.setAno(moto.getAno());
                     existente.setPlaca(moto.getPlaca());
-                    if (moto.getSetor() != null && moto.getSetor().getId() != 0) {
-                        Setor setor = setorRepository.findById(moto.getSetor().getId()).orElse(null);
-                        existente.setSetor(setor);
-                    } else {
-                        existente.setSetor(null);
-                    }
+                    existente.setSetor(moto.getSetor());
                     return ResponseEntity.ok(motoRepository.save(existente));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
@@ -69,6 +59,29 @@ public class MotoController {
         }
         motoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/placa/{placa}")
+    public ResponseEntity<Moto> buscarPorPlaca(@PathVariable String placa) {
+        return motoRepository.findByPlaca(placa)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/setor/{setor}")
+    public List<Moto> buscarPorSetor(@PathVariable String setor) {
+        try {
+            return motoRepository.findBySetor(Enum.valueOf(br.com.tria.mobilebackend.model.SetorEnum.class, setor));
+        } catch (IllegalArgumentException ex) {
+            return List.of();
+        }
+    }
+
+    @GetMapping("/por-iot/{iotId}")
+    public ResponseEntity<Moto> buscarPorIot(@PathVariable Long iotId) {
+        return motoRepository.findByIotId(iotId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
 

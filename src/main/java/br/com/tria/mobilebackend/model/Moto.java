@@ -1,6 +1,5 @@
 package br.com.tria.mobilebackend.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -9,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -26,10 +23,8 @@ public class Moto {
     private String placa;
     private int ano;
 
-    @ManyToOne
-    @JoinColumn(name = "setor_id")
-    @JsonBackReference(value = "setor-motos")
-    private Setor setor;
+    @Enumerated(EnumType.STRING)
+    private SetorEnum setor;
 
     @OneToOne(mappedBy = "moto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "moto-iot")
@@ -67,11 +62,11 @@ public class Moto {
         this.ano = ano;
     }
 
-    public Setor getSetor() {
+    public SetorEnum getSetor() {
         return setor;
     }
 
-    public void setSetor(Setor setor) {
+    public void setSetor(SetorEnum setor) {
         this.setor = setor;
     }
 
